@@ -1,0 +1,16 @@
+Software under test
+	Tested dll: https://github.com/MichalDurila/HID_QA_Homework/blob/master/bin/windows/hash.dll
+	Commit (SHA-1): 33b63f31d2595fe5d50d95217f23d61617ebd312
+	From the remote repository: https://github.com/MichalDurila/HID_QA_Homework.git
+		which was checked out in the revision (SHA-1): b71fcb5946f42400cf8cc1fe557819bb721eb460
+
+Test environment
+	Operating system: Edition Windows 10 Enterprise 64-bit, Version: 22H2, OS build: 19045.5131, Windows Feature Experience Pack: 1000.19060.1000.0
+	Python: Python 3.13.0 32-bit, https://www.python.org/ftp/python/3.13.0/python-3.13.0.exe
+	Libraries installed for Python:
+		pip     24.2
+
+Discovered bugs
+	When the library is already initialized, the method HashInit() shall return HASH_ERROR_ALREADY_INITIALIZED error code after another attempt to initialize it. However, it returns HASH_ERROR_OK instead.
+	This has not been clearly defined in the requirements file, but we suppose, that if the method HashInit() is called with some input argument, it shall return some error code. However, it returns HASH_ERROR_OK instead.
+	This has not been clearly defined in the requirements file, but we suppose, that if the method HashTerminate() is called with some input argument, it shall return some error code. However, it returns HASH_ERROR_OK instead.

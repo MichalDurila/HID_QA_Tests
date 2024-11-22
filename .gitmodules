@@ -1,0 +1,3 @@
+[submodule "HID_QA_Homework"]
+	path = HID_QA_Homework
+	url = https://github.com/MichalDurila/HID_QA_Homework.git
