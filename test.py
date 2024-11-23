@@ -24,45 +24,102 @@ dll.HashInit.restype = ctypes.c_uint32
 
 dll.HashTerminate.restype = ctypes.c_uint32
 
-# Test the HashInit method
-result = dll.HashInit()
-assert HASH_ERROR_OK == result, "HashInit initialization"
-dll.HashTerminate()
 
-dll.HashInit()
-result2 = dll.HashInit()
-assert HASH_ERROR_ALREADY_INITIALIZED == result2, "HashInit second initialization"
-dll.HashTerminate()
+def _generic_action(measured_result, expected_codes, test_case_name, test_case_id):
+    """Generic method for a common evaluation of test cases and reporting into a log.
 
-result3 = dll.HashInit(0)
-assert result3 in (HASH_ERROR_EXCEPTION, HASH_ERROR_ARGUMENT_INVALID), "HashInit redundant argument"
-dll.HashTerminate()
+    :param int measured_result: output response code from a library method call
+    :param tuple expected_codes: all allowed (expected) response codes
+    :param str test_case_name: name of the test case
+    :param int test_case_id: unique identifier of the test case
+    """
+    if isinstance(expected_codes, int):
+        expected_codes = (expected_codes,)
+    elif isinstance(expected_codes, list):
+        expected_codes = tuple(expected_codes)
 
-dll.HashInit()
-result4 = dll.HashInit(0)
-assert result4 in (HASH_ERROR_EXCEPTION, HASH_ERROR_ARGUMENT_INVALID, HASH_ERROR_ALREADY_INITIALIZED), "HashInit redundant argument in the second initialization"
-dll.HashTerminate()
+    evaluation = "PASS"
+    expected = ""
 
-# Test the HashTerminate method
-dll.HashInit()
-result = dll.HashTerminate()
-assert HASH_ERROR_OK == result, "HashTerminate termination"
+    if measured_result not in expected_codes:
+        evaluation = "FAIL"
+        expected = f"; Expected = {expected_codes}"
+    print(f"{evaluation} {test_case_id:03d}: {test_case_name}. Measured = {measured_result}{expected}")
 
-result2 = dll.HashTerminate()
-assert HASH_ERROR_NOT_INITIALIZED == result2, "HashTerminate second termination"
 
-dll.HashInit()
-result3 = dll.HashTerminate(0)
-assert result3 in (HASH_ERROR_EXCEPTION, HASH_ERROR_ARGUMENT_INVALID), "HashTerminate redundant argument"
+# Test Cases
+def hash_init():
+    """Test if HashInit() returns the right response code"""
+    measured_result = dll.HashInit()
+    _generic_action(measured_result, HASH_ERROR_OK, "HashInit initialization", 0)
+    dll.HashTerminate()
 
-result4 = dll.HashTerminate(0)
-assert result4 in (HASH_ERROR_EXCEPTION, HASH_ERROR_ARGUMENT_INVALID, HASH_ERROR_NOT_INITIALIZED), "HashTerminate redundant argument in the second termination"
 
-print("Test run finished")
+def hash_init_twice():
+    """Test if HashInit() returns the right error code, when initialized for the second time"""
+    dll.HashInit()
+    measured_result = dll.HashInit()
+    _generic_action(measured_result, HASH_ERROR_ALREADY_INITIALIZED, "HashInit second initialization", 1)
+    dll.HashTerminate()
 
-# TODO: Introduce UUID of the test cases
-# TODO: Catch FAILED test cases, so that they do not interrupt the test run
-# TODO: Introduce a test report (printed out into the console / file saved somewhere)
-# TODO: Add a brief description of the test cases
+
+def hash_init_redundant():
+    """Test if HashInit() returns the right error code, when called with an input argument"""
+    measured_result = dll.HashInit(0)
+    _generic_action(measured_result, (HASH_ERROR_EXCEPTION, HASH_ERROR_ARGUMENT_INVALID), "HashInit redundant argument", 2)
+    dll.HashTerminate()
+
+
+def hash_init_twice_redundant():
+    """Test if HashInit() returns the right error code, when initialized for the second time and even with an input argument"""
+    dll.HashInit()
+    measured_result = dll.HashInit(0)
+    _generic_action(measured_result, (HASH_ERROR_EXCEPTION, HASH_ERROR_ARGUMENT_INVALID, HASH_ERROR_ALREADY_INITIALIZED), "HashInit redundant argument in the second initialization", 3)
+    dll.HashTerminate()
+
+
+def hash_terminate():
+    """Test if HashTerminate() returns the right response code"""
+    dll.HashInit()
+    measured_result = dll.HashTerminate()
+    _generic_action(measured_result, HASH_ERROR_OK, "HashTerminate termination", 4)
+
+
+def hash_terminate_twice():
+    """Test if HashTerminate() returns the right error code, when terminated for the second time"""
+    measured_result = dll.HashTerminate()
+    _generic_action(measured_result, HASH_ERROR_NOT_INITIALIZED, "HashTerminate second termination", 5)
+
+
+def hash_terminate_redundant():
+    """Test if HashTerminate() returns the right error code, when called with an input argument"""
+    dll.HashInit()
+    measured_result = dll.HashTerminate(0)
+    _generic_action(measured_result, (HASH_ERROR_EXCEPTION, HASH_ERROR_ARGUMENT_INVALID), "HashTerminate redundant argument", 6)
+
+
+def hash_terminate_twice_redundant():
+    """Test if HashTerminate() returns the right error code, when terminated for the second time and even with an input argument"""
+    measured_result = dll.HashTerminate(0)
+    _generic_action(measured_result, (HASH_ERROR_EXCEPTION, HASH_ERROR_ARGUMENT_INVALID, HASH_ERROR_NOT_INITIALIZED), "HashTerminate redundant argument in the second termination", 7)
+
+
+# Test Suite
+if __name__ == "__main__":
+    # Test the HashInit method
+    hash_init()
+    hash_init_twice()
+    hash_init_redundant()
+    hash_init_twice_redundant()
+
+    # Test the HashTerminate method
+    hash_terminate()
+    hash_terminate_twice()
+    hash_terminate_redundant()
+    hash_terminate_twice_redundant()
+
+    print("Test run finished")
+
+
 # TODO: Add the test cases for other methods from the dll
 # Add some default .pylintrc file
