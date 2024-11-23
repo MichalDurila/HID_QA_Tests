@@ -27,15 +27,24 @@ dll.HashTerminate.restype = ctypes.c_uint32
 # Test the HashInit method
 result = dll.HashInit()
 assert HASH_ERROR_OK == result, "HashInit initialization"
+dll.HashTerminate()
 
+dll.HashInit()
 result2 = dll.HashInit()
 assert HASH_ERROR_ALREADY_INITIALIZED == result2, "HashInit second initialization"
-
 dll.HashTerminate()
+
 result3 = dll.HashInit(0)
 assert result3 in (HASH_ERROR_EXCEPTION, HASH_ERROR_ARGUMENT_INVALID), "HashInit redundant argument"
+dll.HashTerminate()
+
+dll.HashInit()
+result4 = dll.HashInit(0)
+assert result4 in (HASH_ERROR_EXCEPTION, HASH_ERROR_ARGUMENT_INVALID, HASH_ERROR_ALREADY_INITIALIZED), "HashInit redundant argument in the second initialization"
+dll.HashTerminate()
 
 # Test the HashTerminate method
+dll.HashInit()
 result = dll.HashTerminate()
 assert HASH_ERROR_OK == result, "HashTerminate termination"
 
@@ -46,12 +55,14 @@ dll.HashInit()
 result3 = dll.HashTerminate(0)
 assert result3 in (HASH_ERROR_EXCEPTION, HASH_ERROR_ARGUMENT_INVALID), "HashTerminate redundant argument"
 
+result4 = dll.HashTerminate(0)
+assert result4 in (HASH_ERROR_EXCEPTION, HASH_ERROR_ARGUMENT_INVALID, HASH_ERROR_NOT_INITIALIZED), "HashTerminate redundant argument in the second termination"
+
 print("Test run finished")
 
-# TODO: Add 2 test cases for redundant arguments, when improperly de-/initialized
-# TODO: Rewrite test cases, so that they can run in a different order = add preconditions, action part, postconditions + wrap into methods
 # TODO: Introduce UUID of the test cases
 # TODO: Catch FAILED test cases, so that they do not interrupt the test run
 # TODO: Introduce a test report (printed out into the console / file saved somewhere)
 # TODO: Add a brief description of the test cases
 # TODO: Add the test cases for other methods from the dll
+# Add some default .pylintrc file

@@ -10,7 +10,21 @@ Test environment
 	Libraries installed for Python:
 		pip     24.2
 
-Discovered bugs
+Definitions of error codes
+	HASH_ERROR_OK = 0
+	HASH_ERROR_GENERAL = 1
+	HASH_ERROR_EXCEPTION = 2
+	HASH_ERROR_MEMORY = 3
+	HASH_ERROR_LOG_EMPTY = 4
+	HASH_ERROR_ARGUMENT_INVALID = 5
+	HASH_ERROR_ARGUMENT_NULL = 6
+	HASH_ERROR_NOT_INITIALIZED = 7
+	HASH_ERROR_ALREADY_INITIALIZED = 8
+
+Discovered serious bugs
 	When the library is already initialized, the method HashInit() shall return HASH_ERROR_ALREADY_INITIALIZED error code after another attempt to initialize it. However, it returns HASH_ERROR_OK instead.
+
+Discovered less significant bugs
 	This has not been clearly defined in the requirements file, but we suppose, that if the method HashInit() is called with some input argument, it shall return some error code. However, it returns HASH_ERROR_OK instead.
+	This has not been clearly defined in the requirements file, but we suppose, that if the method HashInit() is called with some input argument even after it has already been initialized, it shall return some error code. However, it returns HASH_ERROR_OK instead.
 	This has not been clearly defined in the requirements file, but we suppose, that if the method HashTerminate() is called with some input argument, it shall return some error code. However, it returns HASH_ERROR_OK instead.
