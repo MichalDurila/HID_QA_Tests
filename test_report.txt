@@ -1,0 +1,10 @@
+Test report from 24.11.2024 00:56:41.335690 
+
+PASS 000: HashInit initialization. Measured = 0
+FAIL 001: HashInit second initialization. Measured = 0; Expected = (8,)
+FAIL 002: HashInit redundant argument. Measured = 0; Expected = (2, 5)
+FAIL 003: HashInit redundant argument in the second initialization. Measured = 0; Expected = (2, 5, 8)
+PASS 004: HashTerminate termination. Measured = 0
+PASS 005: HashTerminate second termination. Measured = 7
+FAIL 006: HashTerminate redundant argument. Measured = 0; Expected = (2, 5)
+PASS 007: HashTerminate redundant argument in the second termination. Measured = 7

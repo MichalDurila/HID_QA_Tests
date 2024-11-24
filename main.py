@@ -6,17 +6,20 @@ All necessary libraries are already preinstalled within Python.
 """
 
 import os
+import datetime
 import ctypes
 
-HASH_ERROR_OK = 0
-HASH_ERROR_GENERAL = 1
-HASH_ERROR_EXCEPTION = 2
-HASH_ERROR_MEMORY = 3
-HASH_ERROR_LOG_EMPTY = 4
-HASH_ERROR_ARGUMENT_INVALID = 5
-HASH_ERROR_ARGUMENT_NULL = 6
-HASH_ERROR_NOT_INITIALIZED = 7
-HASH_ERROR_ALREADY_INITIALIZED = 8
+HASH_ERROR_OK = 0  # Success
+HASH_ERROR_GENERAL = 1  # Unknown error
+HASH_ERROR_EXCEPTION = 2  # Standard exception encountered
+HASH_ERROR_MEMORY = 3  # Memory allocation failed
+HASH_ERROR_LOG_EMPTY = 4  # Reading an empty log
+HASH_ERROR_ARGUMENT_INVALID = 5  # Invalid argument passed to a function
+HASH_ERROR_ARGUMENT_NULL = 6  # Empty argument passed to a function
+HASH_ERROR_NOT_INITIALIZED = 7  # Library is not initialized
+HASH_ERROR_ALREADY_INITIALIZED = 8  # Library is already initialized
+
+TEST_REPORT_FILE_PATH = "test_report.txt"
 
 dll = ctypes.CDLL(os.path.join("HID_QA_Homework", "bin", "windows", "hash.dll"))
 
@@ -44,7 +47,12 @@ def _generic_action(measured_result, expected_codes, test_case_name, test_case_i
     if measured_result not in expected_codes:
         evaluation = "FAIL"
         expected = f"; Expected = {expected_codes}"
-    print(f"{evaluation} {test_case_id:03d}: {test_case_name}. Measured = {measured_result}{expected}")
+
+    msg = f"{evaluation} {test_case_id:03d}: {test_case_name}. Measured = {measured_result}{expected}"
+    print(msg)
+
+    with open(TEST_REPORT_FILE_PATH, "at", encoding="UTF-8") as report_file:
+        report_file.write(msg + "\n")
 
 
 # Test Cases
@@ -59,22 +67,43 @@ def hash_init_twice():
     """Test if HashInit() returns the right error code, when initialized for the second time"""
     dll.HashInit()
     measured_result = dll.HashInit()
-    _generic_action(measured_result, HASH_ERROR_ALREADY_INITIALIZED, "HashInit second initialization", 1)
+    _generic_action(
+        measured_result,
+        HASH_ERROR_ALREADY_INITIALIZED,
+        "HashInit second initialization",
+        1,
+    )
     dll.HashTerminate()
 
 
 def hash_init_redundant():
     """Test if HashInit() returns the right error code, when called with an input argument"""
     measured_result = dll.HashInit(0)
-    _generic_action(measured_result, (HASH_ERROR_EXCEPTION, HASH_ERROR_ARGUMENT_INVALID), "HashInit redundant argument", 2)
+    _generic_action(
+        measured_result,
+        (HASH_ERROR_EXCEPTION, HASH_ERROR_ARGUMENT_INVALID),
+        "HashInit redundant argument",
+        2,
+    )
     dll.HashTerminate()
 
 
 def hash_init_twice_redundant():
-    """Test if HashInit() returns the right error code, when initialized for the second time and even with an input argument"""
+    """Test if HashInit() returns the right error code,
+    when initialized for the second time and even with an input argument
+    """
     dll.HashInit()
     measured_result = dll.HashInit(0)
-    _generic_action(measured_result, (HASH_ERROR_EXCEPTION, HASH_ERROR_ARGUMENT_INVALID, HASH_ERROR_ALREADY_INITIALIZED), "HashInit redundant argument in the second initialization", 3)
+    _generic_action(
+        measured_result,
+        (
+            HASH_ERROR_EXCEPTION,
+            HASH_ERROR_ARGUMENT_INVALID,
+            HASH_ERROR_ALREADY_INITIALIZED,
+        ),
+        "HashInit redundant argument in the second initialization",
+        3,
+    )
     dll.HashTerminate()
 
 
@@ -88,24 +117,47 @@ def hash_terminate():
 def hash_terminate_twice():
     """Test if HashTerminate() returns the right error code, when terminated for the second time"""
     measured_result = dll.HashTerminate()
-    _generic_action(measured_result, HASH_ERROR_NOT_INITIALIZED, "HashTerminate second termination", 5)
+    _generic_action(
+        measured_result,
+        HASH_ERROR_NOT_INITIALIZED,
+        "HashTerminate second termination",
+        5,
+    )
 
 
 def hash_terminate_redundant():
     """Test if HashTerminate() returns the right error code, when called with an input argument"""
     dll.HashInit()
     measured_result = dll.HashTerminate(0)
-    _generic_action(measured_result, (HASH_ERROR_EXCEPTION, HASH_ERROR_ARGUMENT_INVALID), "HashTerminate redundant argument", 6)
+    _generic_action(
+        measured_result,
+        (HASH_ERROR_EXCEPTION, HASH_ERROR_ARGUMENT_INVALID),
+        "HashTerminate redundant argument",
+        6,
+    )
 
 
 def hash_terminate_twice_redundant():
-    """Test if HashTerminate() returns the right error code, when terminated for the second time and even with an input argument"""
+    """Test if HashTerminate() returns the right error code,
+    when terminated for the second time and even with an input argument
+    """
     measured_result = dll.HashTerminate(0)
-    _generic_action(measured_result, (HASH_ERROR_EXCEPTION, HASH_ERROR_ARGUMENT_INVALID, HASH_ERROR_NOT_INITIALIZED), "HashTerminate redundant argument in the second termination", 7)
+    _generic_action(
+        measured_result,
+        (HASH_ERROR_EXCEPTION, HASH_ERROR_ARGUMENT_INVALID, HASH_ERROR_NOT_INITIALIZED),
+        "HashTerminate redundant argument in the second termination",
+        7,
+    )
 
 
 # Test Suite
 if __name__ == "__main__":
+    # Create an empty test report file
+    with open(TEST_REPORT_FILE_PATH, "wt", encoding="UTF-8") as report:
+        report.write(
+            f"Test report from {datetime.datetime.now().strftime('%d.%m.%Y %H:%M:%S.%f %z')}\n\n"
+        )
+
     # Test the HashInit method
     hash_init()
     hash_init_twice()
@@ -122,4 +174,3 @@ if __name__ == "__main__":
 
 
 # TODO: Add the test cases for other methods from the dll
-# Add some default .pylintrc file
